@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { AnalysisData } from "../types";
 
@@ -15,64 +16,75 @@ export const generateAnalysis = async (userContext: string, lang: 'zh' | 'en'): 
     : "OUTPUT LANGUAGE: English. All analysis content, titles, summaries, and predictions MUST be written in English.";
 
   const prompt = `
-    You are a Senior Strategic Intelligence Analyst for East Asian Security Affairs.
-    
-    CONTEXT & HYPOTHESIS PROVIDED BY USER:
-    "${userContext}"
+    # Role: Geopolitical Risk Analyst (SJM-CRI 2.0 Specialist)
 
-    INTELLIGENCE GATHERING DIRECTIVES:
-    1. **Expanded Source Scope**: 
-       - **Official Government Sources**: Prioritize statements from:
-         * China: MFA (fmprc.gov.cn), MND (mod.gov.cn), Ministry of Commerce.
-         * Japan: MOFA (mofa.go.jp), MOD (mod.go.jp), Cabinet Office (Kantei).
-         * USA: State Dept, DoD, White House.
-       - **Global Media & Video Analysis**: Analyze reports from Reuters, Bloomberg, NHK, Nikkei, CCTV, CNN, and transcripts/summaries of relevant analysis from major video platforms (e.g., YouTube defense channels).
-    
-    2. **Multi-Language Capability**: Synthesize insights from Chinese (CN), Japanese (JP), and English (EN) sources.
-    
-    3. **Military Analysis Framework (Crucial for Task 5)**:
-       - **Historical Precedent**: Reference Imperial Japanese Navy (IJN) operational patterns (e.g., preemptive strike doctrines, "Kantai Kessen" adaptations).
-       - **Modern Doctrine**: Incorporate "US-Japan Military Integration", "Island Chain" defense theories, and "Multi-Domain Operations" (MDO).
-       - **Capabilities**: Analyze current "Counter-Strike Capabilities" (e.g., Tomahawk acquisition) within the context of a "Decisive Battle" strategy.
+    ## Core Objective
+    You are an expert AI analyst responsible for monitoring and assessing the risk of military conflict between China and Japan. Your task is to execute the **SJM-CRI 2.0 (Sino-Japanese Military Conflict Risk Index)** protocol.
 
-    TASKS:
-    1. **Timeline Reconstruction (Past 7 Days)**: Identify critical nodes in Diplomacy, Military movements, and Public Opinion related to the "Taiwan Issue".
-    2. **Motivation Analysis**: Assess the probability of the leadership's statements being "impulsive" vs. "strategic signaling".
-    3. **Strategic Validation**: ACCEPT the user's hypothesis (Japan entering militarization/breaking post-WWII order/preparing for decisive conflict) as the baseline truth. Elaborate on *how* this is being executed, referencing the "risk vs. reward" calculation of the Takaichi faction.
-    4. **Conflict Trajectory**: Predict the immediate next steps in this confrontation.
-    5. **Tactical Surprise Analysis**: 
-       - Analyze the feasibility of a surprise attack on China.
-       - Use the **Military Analysis Framework** to support your conclusions.
-       - List specific, high-value targets (e.g., specific C4ISR nodes, naval bases, missile sites).
+    ## Context & Hypothesis
+    User Context: "${userContext}"
 
+    ## Workflow
+    1. **Data Acquisition**: You have access to Google Search. You must search for:
+       - Official Travel Advisories (US/CN/JP) in the last 30 days.
+       - PLA and JSDF military movements (Taiwan Strait, East China Sea).
+       - Political rhetoric (PM Takaichi/Beijing responses).
+       - Third-party stances (EU/NATO/ASEAN).
+    2. **Information Refinement**: Cross-reference sources. Prioritize official government statements and military logs over opinion pieces.
+    3. **Dynamic Scoring (SJM-CRI 2.0 Model)**:
+       Calculate the risk using the following STRICT weights.
+       
+       **Formula**: 
+       Base_Score = (0.35 * I_TS) + (0.20 * I_ECS) + (0.15 * I_SUR) + (0.15 * I_IPS) + (0.15 * I_TPI)
+       Total_Risk = Base_Score * M
+
+       **Indices**:
+       - **I_TS (Taiwan Strait Stability) [Weight 0.35]**: Assess military sorties, median line crossings, and political confrontation regarding Taiwan.
+       - **I_ECS (East China Sea) [Weight 0.20]**: Assess Coast Guard incursions (Senkaku/Diaoyu), radar lock-ons, and grey zone operations.
+       - **I_SUR (Sino-US Relations) [Weight 0.15]**: Assess high-level comms (hotlines), sanctions, and carrier strike group deployments.
+       - **I_IPS (Internal Politics) [Weight 0.15]**: Assess domestic economic pressure, nationalism levels, and leadership political survival needs.
+       - **I_TPI (Third Party Influence) [Weight 0.15]**: Assess statements/actions from EU, NATO, G7, and ASEAN.
+       
+       **M (Risk Multiplier)**:
+       - Base: 1.0
+       - +0.2: If active "Reconsider Travel" or higher warning from CN or JP.
+       - +0.5: If US issues "Do Not Travel" or evacuates non-essential personnel.
+       - +0.3: If any direct physical casualty or warning shots fired.
+
+    ## Output Requirements
     ${languageInstruction}
-
-    OUTPUT FORMAT (JSON ONLY):
-    You must return a valid JSON object. Do not include markdown formatting/code blocks around the JSON.
     
-    **IMPORTANT formatting instruction**: The string values for 'impulseAnalysis', 'strategicAnalysis', 'futurePrediction', and 'surpriseAttackAnalysis' MUST be formatted using **HTML tags**.
-    - Use <p> for paragraphs.
-    - Use <ul> and <li> for bullet points.
-    - Use <strong> for key terms or emphasis.
-    - Use <h3> for sub-sections within the analysis.
-    - Do NOT use Markdown syntax (like **bold** or - list) inside these strings; use HTML only.
+    **Formatting**: 
+    - Use HTML tags (\`<p>\`, \`<ul>\`, \`<li>\`, \`<strong>\`) for all string analysis fields. 
+    - Do NOT use Markdown.
+    - Ensure the tone is objective, professional, and intelligence-focused.
 
-    Structure:
+    **JSON Structure**:
+    Return a SINGLE valid JSON object matching this structure:
     {
       "timeline": [
-        { 
-          "date": "YYYY-MM-DD", 
-          "title": "Headline", 
-          "summary": "Detailed summary including source context", 
-          "category": "DIPLOMATIC" | "MILITARY" | "PUBLIC_OPINION" 
-        }
+        { "date": "YYYY-MM-DD", "title": "Short Headline", "summary": "Concise event summary", "category": "DIPLOMATIC" | "MILITARY" | "PUBLIC_OPINION" }
       ],
-      "impulseAnalysis": "<p>Detailed assessment...</p>",
-      "impulseProbability": 0, // 0-100
-      "strategicAnalysis": "<p>Deep dive into the strategic shift...</p><ul><li>Point 1</li></ul>",
-      "futurePrediction": "<p>Step-by-step prediction...</p>",
-      "surpriseAttackAnalysis": "<p>Comprehensive analysis...</p>",
-      "potentialTargets": ["Target 1 (Location - Rationale)", "Target 2", "Target 3"]
+      "conflictIndex": {
+        "totalScore": 0.0, // Calculated Total_Risk
+        "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+        "riskMultiplier": { "value": 1.0, "reason": "Explanation of multiplier" },
+        "indices": {
+          "taiwanStrait": 0.0, // Score 0-10
+          "eastChinaSea": 0.0, // Score 0-10
+          "sinoUsRelation": 0.0, // Score 0-10
+          "internalPolitics": 0.0, // Score 0-10
+          "thirdParty": 0.0 // Score 0-10
+        },
+        "drivers": ["<p>Key driver 1...</p>", "<p>Key driver 2...</p>"],
+        "mitigators": ["<p>Key mitigator 1...</p>", "<p>Key mitigator 2...</p>"]
+      },
+      "impulseAnalysis": "<p>Analysis of leadership impulse vs rationality...</p>",
+      "impulseProbability": 0, // Integer 0-100
+      "strategicAnalysis": "<p>Confirmation of militarization intent...</p>",
+      "futurePrediction": "<p>Prediction of conflict trajectory...</p>",
+      "surpriseAttackAnalysis": "<h3>Feasibility Analysis</h3><p>...</p>",
+      "potentialTargets": ["Target 1", "Target 2"]
     }
   `;
 
@@ -86,8 +98,6 @@ export const generateAnalysis = async (userContext: string, lang: 'zh' | 'en'): 
     });
 
     const textResponse = response.text || "{}";
-    
-    // Attempt to find JSON blob if wrapped in markdown blocks, though prompt asks not to.
     const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
     const jsonString = jsonMatch ? jsonMatch[0] : "{}";
     
